@@ -12,7 +12,7 @@ interface ActivityRegistar
      * @param array $data
      * @return mixed
      */
-    public function registerModel(object $model, string $action, array $data = []);
+    public function registerModel(object $model, string $action, array $data = []): void;
 
     /**
      * @param string $className
@@ -21,6 +21,6 @@ interface ActivityRegistar
      * @param array $data
      * @return mixed
      */
-    public function registerClasNameId(string $className,int $id, string $action, array $data = []);
+    public function registerClasNameId(string $className, int $id, string $action, array $data = []): void;
 
 }
