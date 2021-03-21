@@ -1,7 +1,6 @@
-#Activity registry"
-
+# Activity registry"
+Registre models activities and get activity lists
 ## Features
-
 
 ## Installation
 
@@ -21,10 +20,59 @@ or add
 
 to the `require` section of your `composer.json` file.
 
-
-## Methods
+## defining components
+```php
+    'components' => [
+        'activityList' => [
+            'class' => 'd3yii2\d3activity\components\D3ActivityList',
+            'sysCompanyId' => static function () {
+                return \Yii::$app->SysCmp->getActiveCompanyId();
+            },
+            'models' => [
+                [
+                    'class' => 'd3modules\d3invoices\models\InvInvoice',
+                    'detailClass' => 'd3modules\d3invoices\components\InvInvoiceD3Activity'
+                ]
+            ],
+        ],
+        'activityRegistar' => [
+            'class' => 'd3yii2\d3activity\components\DbActivityRegistar',
+            'sysCompanyId' => static function () {
+                return \Yii::$app->SysCmp->getActiveCompanyId();
+            },
+            'userId' => static function () {
+                return \Yii::$app->user->id;
+            }            
+            
+        ],
+    ]
+```
 
 
 ## Usage
+Registr eactivity
+```php
+    Yii::$app
+        ->activityRegistar
+        ->registerModel(
+            $model,
+            $this->route,
+            ArrayHelper::filter($deliveryModel->attributes,[
+                'recipient_person'
+            ])
+        );
+```
+
+Get activity record list
+
+```php
+        $sysModelIdA = SysModelsDictionary::getIdByClassName(TestModel::class);
+        $sysModelIdB = SysModelsDictionary::getIdByClassName(self::TEST_CLASS_NAME);
+        $list = Yii::$app
+            ->activityList
+            ->getDescList([$sysModelIdA,$sysModelIdB]);
+
+```
+
 
 ## Examples

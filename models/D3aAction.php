@@ -4,7 +4,7 @@ namespace d3yii2\d3activity\models;
 
 use d3system\yii2\db\D3Db;
 use d3yii2\d3activity\dictionaries\D3aActionDictionary;
-use \d3yii2\d3activity\models\base\D3aAction as BaseD3aAction;
+use d3yii2\d3activity\models\base\D3aAction as BaseD3aAction;
 
 /**
  * This is the model class for table "d3a_action".

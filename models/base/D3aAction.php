@@ -20,7 +20,6 @@ abstract class D3aAction extends \yii\db\ActiveRecord
 {
 
 
-
     /**
      * @inheritdoc
      */
@@ -47,7 +46,7 @@ abstract class D3aAction extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            'smallint Unsigned' => [['id'],'integer' ,'min' => 0 ,'max' => 65535],
+            'smallint Unsigned' => [['id'], 'integer', 'min' => 0, 'max' => 65535],
             [['name'], 'string', 'max' => 50]
         ];
     }
@@ -70,8 +69,6 @@ abstract class D3aAction extends \yii\db\ActiveRecord
     {
         return $this->hasMany(\d3yii2\d3activity\models\D3aActivity::className(), ['action_id' => 'id'])->inverseOf('action');
     }
-
-
 
 
 }

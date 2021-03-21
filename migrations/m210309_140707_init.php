@@ -2,9 +2,11 @@
 
 use yii\db\Migration;
 
-class m210309_140707_init  extends Migration {
+class m210309_140707_init extends Migration
+{
 
-    public function safeUp() { 
+    public function safeUp()
+    {
         $this->execute('
             CREATE TABLE `d3a_action` (
               `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
@@ -28,14 +30,14 @@ class m210309_140707_init  extends Migration {
               KEY `sys_company_id` (`sys_company_id`),
               KEY `sys_model_id` (`sys_model_id`),
               CONSTRAINT `d3a_activity_ibfk_1` FOREIGN KEY (`action_id`) REFERENCES `d3a_action` (`id`),
-              CONSTRAINT `d3a_activity_ibfk_2` FOREIGN KEY (`sys_company_id`) REFERENCES `d3c_company` (`id`),
               CONSTRAINT `d3a_activity_ibfk_3` FOREIGN KEY (`sys_model_id`) REFERENCES `sys_models` (`id`)
             ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1
         
         ');
     }
 
-    public function safeDown() {
+    public function safeDown()
+    {
         echo "m210309_140707_init cannot be reverted.\n";
         return false;
     }

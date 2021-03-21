@@ -21,7 +21,6 @@ use d3system\behaviors\D3DateTimeBehavior;
  * @property string $data
  *
  * @property \d3yii2\d3activity\models\D3aAction $action
- * @property \d3yii2\d3activity\models\D3cCompany $sysCompany
  * @property \d3yii2\d3activity\models\SysModels $sysModel
  * @property string $aliasModel
  */
@@ -68,7 +67,6 @@ abstract class D3aActivity extends \yii\db\ActiveRecord
             [['time'], 'safe'],
             [['data'], 'string'],
             [['action_id'], 'exist', 'skipOnError' => true, 'targetClass' => \d3yii2\d3activity\models\D3aAction::className(), 'targetAttribute' => ['action_id' => 'id']],
-            [['sys_company_id'], 'exist', 'skipOnError' => true, 'targetClass' => \d3yii2\d3activity\models\D3cCompany::className(), 'targetAttribute' => ['sys_company_id' => 'id']],
             [['sys_model_id'], 'exist', 'skipOnError' => true, 'targetClass' => \d3yii2\d3activity\models\SysModels::className(), 'targetAttribute' => ['sys_model_id' => 'id']],
             'D3DateTimeBehavior' => [['time_local'],'safe']
         ];
@@ -97,14 +95,6 @@ abstract class D3aActivity extends \yii\db\ActiveRecord
     public function getAction()
     {
         return $this->hasOne(\d3yii2\d3activity\models\D3aAction::className(), ['id' => 'action_id'])->inverseOf('d3aActivities');
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getSysCompany()
-    {
-        return $this->hasOne(\d3yii2\d3activity\models\D3cCompany::className(), ['id' => 'sys_company_id'])->inverseOf('d3aActivities');
     }
 
     /**

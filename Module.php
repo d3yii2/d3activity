@@ -2,8 +2,8 @@
 
 namespace d3yii2\d3activity;
 
-use Yii;
 use d3system\yii2\base\D3Module;
+use Yii;
 
 class Module extends D3Module
 {
@@ -13,6 +13,6 @@ class Module extends D3Module
 
     public function getLabel(): string
     {
-        return Yii::t('d3activity','Activity registry');
+        return Yii::t('d3activity', 'Activity registry');
     }
 }

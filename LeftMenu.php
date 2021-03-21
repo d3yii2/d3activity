@@ -1,8 +1,11 @@
 <?php
+
 namespace d3yii2\d3activity;
 
 use Yii;
-class LeftMenu {
+
+class LeftMenu
+{
 
     public function list()
     {

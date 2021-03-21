@@ -16,32 +16,36 @@ class DbActivityRegistar extends Component implements ActivityRegistar
 
 
     /**
-     * @var int
+     * @var int|callable
      */
-    private $sysCompanyId;
+    public $sysCompanyId;
 
     /**
-     * @var int
+     * @var int|callable
      */
-    private $userId;
+    public $userId;
 
-    public function init(): void
+    public function __construct($config = [])
     {
-        $this->sysCompanyId = \Yii::$app->SysCmp->getActiveCompanyId();
-        $this->userId = \Yii::$app->user->id;
+        parent::__construct($config);
+        if ($this->sysCompanyId && is_callable($this->sysCompanyId, true)) {
+            $this->sysCompanyId = call_user_func($this->sysCompanyId);
+        }
+
+        if ($this->userId && is_callable($this->userId, true)) {
+            $this->userId = call_user_func($this->userId);
+        }
     }
 
     /**
-     * @param ActiveRecord $model
-     * @param string $action
-     * @param array $data
+     * @inheritdoc
      */
     public function registerModel(object $model, string $action, array $data = []): void
     {
         try {
             $activityModel = $this->newD3aActivity($action, $data);
             $activityModel->sys_model_id = SysModelsDictionary::getIdByClassName(get_class($model));
-            if ($model->hasAttribute('id') || $model->hasProperty('id')) {
+            if ($model->hasProperty('id') || $model->hasAttribute('id')) {
                 $activityModel->model_id = $model->id;
             } else {
                 $activityModel->model_id = 0;
@@ -54,24 +58,8 @@ class DbActivityRegistar extends Component implements ActivityRegistar
         }
     }
 
-    public function registerClasNameId(string $className, int $id, string $action, array $data = []): void
-    {
-        try {
-            $activityModel = $this->newD3aActivity($action, $data);
-            $activityModel->sys_model_id = SysModelsDictionary::getIdByClassName($className);
-            $activityModel->model_id = $id;
-            if (!$activityModel->save()) {
-                throw new D3ActiveRecordException($activityModel);
-            }
-        } catch (\Exception $e) {
-            \Yii::error($e->getMessage());
-        }
-    }
-
     /**
-     * @param string $action
-     * @return D3aActivity
-     * @throws D3ActiveRecordException
+     * @inheritdoc
      */
     private function newD3aActivity(string $action, array $data): D3aActivity
     {
@@ -88,5 +76,25 @@ class DbActivityRegistar extends Component implements ActivityRegistar
         }
         $model->data = Json::encode($data);
         return $model;
+    }
+
+    /**
+     * @param string $className
+     * @param int $id
+     * @param string $action
+     * @param array $data
+     */
+    public function registerClasNameId(string $className, int $id, string $action, array $data = []): void
+    {
+        try {
+            $activityModel = $this->newD3aActivity($action, $data);
+            $activityModel->sys_model_id = SysModelsDictionary::getIdByClassName($className);
+            $activityModel->model_id = $id;
+            if (!$activityModel->save()) {
+                throw new D3ActiveRecordException($activityModel);
+            }
+        } catch (\Exception $e) {
+            \Yii::error($e->getMessage());
+        }
     }
 }

@@ -65,15 +65,15 @@ class RegActivity
         $model->sys_company_id = $this->sysCompanyId;
         $model->user_id = $this->userId;
         $model->time = date('Y-m-d H:i:s');
-        if($this->modelClassName) {
+        if ($this->modelClassName) {
             $model->sys_model_id = SysModelsDictionary::getIdByClassName($this->modelClassName);
-        }else {
+        } else {
             $model->sys_model_id = SysModelsDictionary::getIdByClassName(get_class($this->model));
         }
         $model->model_id = $this->model->id;
         $model->action_id = D3aActionDictionary::getIdByName($this->action);
         $model->data = Json::encode($this->data);
-        if(!$model->save()){
+        if (!$model->save()) {
             throw new D3ActiveRecordException($model);
         }
     }
