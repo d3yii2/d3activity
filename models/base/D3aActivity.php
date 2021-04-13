@@ -4,9 +4,13 @@
 
 namespace d3yii2\d3activity\models\base;
 
+use d3yii2\d3activity\models\D3aActivityQuery;
+use d3yii2\d3activity\models\SysModels;
 use Yii;
 
 use d3system\behaviors\D3DateTimeBehavior;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * This is the base-model class for table "d3a_activity".
@@ -21,10 +25,10 @@ use d3system\behaviors\D3DateTimeBehavior;
  * @property string $data
  *
  * @property \d3yii2\d3activity\models\D3aAction $action
- * @property \d3yii2\d3activity\models\SysModels $sysModel
+ * @property SysModels $sysModel
  * @property string $aliasModel
  */
-abstract class D3aActivity extends \yii\db\ActiveRecord
+abstract class D3aActivity extends ActiveRecord
 {
 
 
@@ -59,7 +63,7 @@ abstract class D3aActivity extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            'required' => [['sys_company_id', 'sys_model_id', 'model_id', 'action_id'], 'required'],
+            'required' => [['sys_model_id', 'model_id', 'action_id'], 'required'],
             'tinyint Unsigned' => [['sys_model_id'],'integer' ,'min' => 0 ,'max' => 255],
             'smallint Unsigned' => [['sys_company_id','user_id','action_id'],'integer' ,'min' => 0 ,'max' => 65535],
             'integer Unsigned' => [['model_id'],'integer' ,'min' => 0 ,'max' => 4294967295],
@@ -67,7 +71,7 @@ abstract class D3aActivity extends \yii\db\ActiveRecord
             [['time'], 'safe'],
             [['data'], 'string'],
             [['action_id'], 'exist', 'skipOnError' => true, 'targetClass' => \d3yii2\d3activity\models\D3aAction::className(), 'targetAttribute' => ['action_id' => 'id']],
-            [['sys_model_id'], 'exist', 'skipOnError' => true, 'targetClass' => \d3yii2\d3activity\models\SysModels::className(), 'targetAttribute' => ['sys_model_id' => 'id']],
+            [['sys_model_id'], 'exist', 'skipOnError' => true, 'targetClass' => SysModels::className(), 'targetAttribute' => ['sys_model_id' => 'id']],
             'D3DateTimeBehavior' => [['time_local'],'safe']
         ];
     }
@@ -90,7 +94,7 @@ abstract class D3aActivity extends \yii\db\ActiveRecord
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
     public function getAction()
     {
@@ -98,22 +102,22 @@ abstract class D3aActivity extends \yii\db\ActiveRecord
     }
 
     /**
-     * @return \yii\db\ActiveQuery
+     * @return ActiveQuery
      */
     public function getSysModel()
     {
-        return $this->hasOne(\d3yii2\d3activity\models\SysModels::className(), ['id' => 'sys_model_id'])->inverseOf('d3aActivities');
+        return $this->hasOne(SysModels::className(), ['id' => 'sys_model_id'])->inverseOf('d3aActivities');
     }
 
 
     
     /**
      * @inheritdoc
-     * @return \d3yii2\d3activity\models\D3aActivityQuery the active query used by this AR class.
+     * @return D3aActivityQuery the active query used by this AR class.
      */
     public static function find()
     {
-        return new \d3yii2\d3activity\models\D3aActivityQuery(get_called_class());
+        return new D3aActivityQuery(get_called_class());
     }
 
 

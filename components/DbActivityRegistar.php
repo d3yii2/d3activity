@@ -6,8 +6,9 @@ use d3system\dictionaries\SysModelsDictionary;
 use d3system\exceptions\D3ActiveRecordException;
 use d3yii2\d3activity\dictionaries\D3aActionDictionary;
 use d3yii2\d3activity\models\D3aActivity;
+use Exception;
+use Yii;
 use yii\base\Component;
-use yii\db\ActiveRecord;
 use yii\helpers\Json;
 
 
@@ -29,7 +30,9 @@ class DbActivityRegistar extends Component implements ActivityRegistar
     {
         parent::__construct($config);
         if ($this->sysCompanyId && is_callable($this->sysCompanyId, true)) {
-            $this->sysCompanyId = call_user_func($this->sysCompanyId);
+            if(!$this->sysCompanyId = call_user_func($this->sysCompanyId)){
+                $this->sysCompanyId = null;
+            }
         }
 
         if ($this->userId && is_callable($this->userId, true)) {
@@ -53,8 +56,8 @@ class DbActivityRegistar extends Component implements ActivityRegistar
             if (!$activityModel->save()) {
                 throw new D3ActiveRecordException($activityModel);
             }
-        } catch (\Exception $e) {
-            \Yii::error($e->getMessage());
+        } catch (Exception $e) {
+            Yii::error($e->getMessage());
         }
     }
 
@@ -93,8 +96,8 @@ class DbActivityRegistar extends Component implements ActivityRegistar
             if (!$activityModel->save()) {
                 throw new D3ActiveRecordException($activityModel);
             }
-        } catch (\Exception $e) {
-            \Yii::error($e->getMessage());
+        } catch (Exception $e) {
+            Yii::error($e->getMessage());
         }
     }
 }

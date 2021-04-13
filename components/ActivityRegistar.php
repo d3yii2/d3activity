@@ -6,6 +6,11 @@ namespace d3yii2\d3activity\components;
 
 use yii\db\ActiveRecord;
 
+/**
+ * Interface ActivityRegistar
+ * @package d3yii2\d3activity\components
+ * @property int $userId
+ */
 interface ActivityRegistar
 {
     /**
