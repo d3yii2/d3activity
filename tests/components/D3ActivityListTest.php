@@ -48,10 +48,10 @@ class D3ActivityListTest extends TestCase
     {
         $register = new DbActivityRegistar([
             'sysCompanyId' => static function () {
-                return \Yii::$app->SysCmp->getActiveCompanyId();
+                return Yii::$app->SysCmp->getActiveCompanyId();
             },
             'userId' => static function () {
-                return \Yii::$app->user->id;
+                return Yii::$app->user->id;
             }
         ]);
 
@@ -82,15 +82,15 @@ class D3ActivityListTest extends TestCase
     {
         $activitylist = new D3ActivityList([
             'sysCompanyId' => static function () {
-                return \Yii::$app->SysCmp->getActiveCompanyId();
+                return Yii::$app->SysCmp->getActiveCompanyId();
             },
             'modelsData' => [
                 [
-                    'class' => TestModel::class,
+                    'modelClass' => TestModel::class,
                     'detailClass' => TestModelD3Activity::class
                 ],
                 [
-                    'class' => self::TEST_CLASS_NAME,
+                    'modelClass' => self::TEST_CLASS_NAME,
                     'detailClass' => TestModelD3Activity::class
                 ]
             ],

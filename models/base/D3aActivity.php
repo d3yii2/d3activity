@@ -4,6 +4,8 @@
 
 namespace d3yii2\d3activity\models\base;
 
+use d3system\dictionaries\SysModelsDictionary;
+use d3yii2\d3activity\dictionaries\D3aActionDictionary;
 use d3yii2\d3activity\models\D3aActivityQuery;
 use d3yii2\d3activity\models\SysModels;
 use Yii;
@@ -70,8 +72,8 @@ abstract class D3aActivity extends ActiveRecord
             'bigint Unsigned' => [['id'],'integer' ,'min' => 0 ,'max' => 1.844674407371E+19],
             [['time'], 'safe'],
             [['data'], 'string'],
-            [['action_id'], 'exist', 'skipOnError' => true, 'targetClass' => \d3yii2\d3activity\models\D3aAction::className(), 'targetAttribute' => ['action_id' => 'id']],
-            [['sys_model_id'], 'exist', 'skipOnError' => true, 'targetClass' => SysModels::className(), 'targetAttribute' => ['sys_model_id' => 'id']],
+            [['action_id'], 'in', 'range' => array_keys(D3aActionDictionary::getList())],
+            [['sys_model_id'], 'in', 'range' => array_keys(SysModelsDictionary::getClassList())],
             'D3DateTimeBehavior' => [['time_local'],'safe']
         ];
     }

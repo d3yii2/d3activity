@@ -5,6 +5,8 @@ namespace d3yii2\d3activity\components;
 
 
 use d3system\dictionaries\SysModelsDictionary;
+use DateTime;
+use Yii;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\helpers\ArrayHelper;
@@ -53,6 +55,23 @@ class D3ActivityList extends Component
     }
 
     /**
+     * @param array $modelClassNameList
+     * @param int $limit
+     * @return \d3yii2\d3activity\components\ActivityRecord[]
+     * @throws \d3system\exceptions\D3ActiveRecordException
+     * @throws \yii\base\Exception
+     */
+    public function getDescListByClassNames(array $modelClassNameList, int $limit = 20): array
+    {
+        $idList = [];
+        foreach($modelClassNameList as $className){
+            $idList[] = SysModelsDictionary::getIdByClassName($className);
+        }
+
+        return $this->getDescList($idList,$limit);
+    }
+
+    /**
      * get descending activity record list
      * @param array $sysModelIdList
      * @param int $limit
@@ -76,18 +95,19 @@ class D3ActivityList extends Component
         /**
          * for each model get ActivityRecords
          */
+        $returnList = [];
         foreach ($sysModelsRecordIdList as $sysModelId => $modelIdList) {
             /** @var ModelActivityInterface $modelDetailClass */
             $modelDetailClass = $this->getModelDetailClassName($sysModelId);
             /** @var ActivityRecord[] $modelDetail */
-            foreach ($modelDetailClass::findByIdlist($modelIdList) as $activityRecord) {
+            foreach ($modelDetailClass::findByIdList($modelIdList) as $activityRecord) {
                 $key = $sysModelId . ' ' . $activityRecord->recordId;
-                $activityRecord->dateTime = \DateTime::createFromFormat('Y-m-d H:i:s', $baseList[$key]['maxTime']);
-                $baseList[$key]['activityRecord'] = $activityRecord;
-            };
+                $activityRecord->dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $baseList[$key]['maxTime']);
+                $returnList[$key] = $activityRecord;
+            }
         }
 
-        return ArrayHelper::getColumn($baseList, 'activityRecord');
+        return $returnList;
 
     }
 
@@ -106,7 +126,7 @@ class D3ActivityList extends Component
             $sysModels = '';
         }
 
-        return \Yii::$app->db->createCommand(
+        return Yii::$app->db->createCommand(
             '
                     SELECT 
                       sys_model_id,
@@ -121,10 +141,9 @@ class D3ActivityList extends Component
                       `model_id` 
                     ORDER BY `time` DESC 
                     LIMIT :limit ;            
-            ',
-            [
-                ':limit' => $limit,
-                ':sysCompanyId' => $this->sysCompanyId
+            ', [
+                ':sysCompanyId' => $this->sysCompanyId,
+                ':limit' => $limit
             ]
         )
             ->queryAll();
@@ -140,7 +159,7 @@ class D3ActivityList extends Component
     private function getModelDetailClassName(int $sysModelId): string
     {
         foreach ($this->modelsData as $modelData) {
-            if (SysModelsDictionary::getIdByClassName($modelData['class']) === $sysModelId) {
+            if (SysModelsDictionary::getIdByClassName($modelData['modelClass']) === $sysModelId) {
                 return $modelData['detailClass'];
             }
         }
