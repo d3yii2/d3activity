@@ -61,14 +61,14 @@ class D3ActivityList extends Component
      * @throws \d3system\exceptions\D3ActiveRecordException
      * @throws \yii\base\Exception
      */
-    public function getDescListByClassNames(array $modelClassNameList, int $limit = 20): array
+    public function getDescListByClassNames(array $modelClassNameList, int $limit = 20, int $offset = 0): array
     {
         $idList = [];
         foreach($modelClassNameList as $className){
             $idList[] = SysModelsDictionary::getIdByClassName($className);
         }
 
-        return $this->getDescList($idList,$limit);
+        return $this->getDescList($idList,$limit, $offset);
     }
 
     /**
@@ -79,9 +79,9 @@ class D3ActivityList extends Component
      * @throws Exception
      * @throws \d3system\exceptions\D3ActiveRecordException
      */
-    public function getDescList(array $sysModelIdList, int $limit = 20): array
+    public function getDescList(array $sysModelIdList, int $limit = 20, int $offset = 0): array
     {
-        $baseList = $this->getBaseList($sysModelIdList, $limit);
+        $baseList = $this->getBaseList($sysModelIdList, $limit, $offset);
         $baseList = ArrayHelper::index($baseList, 'rowKey');
 
         /**
@@ -118,7 +118,7 @@ class D3ActivityList extends Component
      * @return array
      * @throws \yii\db\Exception
      */
-    public function getBaseList(array $sysModelIdList, int $limit): array
+    public function getBaseList(array $sysModelIdList, int $limit, int $offset): array
     {
         if ($sysModelIdList) {
             $sysModels = 'AND sys_model_id IN (' . implode(',', $sysModelIdList) . ')';
@@ -140,10 +140,11 @@ class D3ActivityList extends Component
                     GROUP BY `sys_model_id`,
                       `model_id` 
                     ORDER BY `time` DESC 
-                    LIMIT :limit ;            
+                    LIMIT :limit OFFSET :offset;            
             ', [
                 ':sysCompanyId' => $this->sysCompanyId,
-                ':limit' => $limit
+                ':limit' => $limit,
+                ':offset' => $offset
             ]
         )
             ->queryAll();
