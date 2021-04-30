@@ -11,4 +11,10 @@ interface ModelActivityInterface
      * @return ActivityRecord[]
      */
     public static function findByIdList(array $idList): array;
+
+    /**
+     * @param int $id
+     * @return mixed
+     */
+    public static function findModel(int $id);
 }

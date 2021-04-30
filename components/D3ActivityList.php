@@ -57,9 +57,11 @@ class D3ActivityList extends Component
     /**
      * @param array $modelClassNameList
      * @param int $limit
+     * @param int $offset
      * @return \d3yii2\d3activity\components\ActivityRecord[]
      * @throws \d3system\exceptions\D3ActiveRecordException
      * @throws \yii\base\Exception
+     * @throws \yii\db\Exception
      */
     public function getDescListByClassNames(array $modelClassNameList, int $limit = 20, int $offset = 0): array
     {
@@ -75,13 +77,15 @@ class D3ActivityList extends Component
      * get descending activity record list
      * @param array $sysModelIdList
      * @param int $limit
+     * @param int $offset
      * @return ActivityRecord[]
-     * @throws Exception
      * @throws \d3system\exceptions\D3ActiveRecordException
+     * @throws \yii\base\Exception
+     * @throws \yii\db\Exception
      */
     public function getDescList(array $sysModelIdList, int $limit = 20, int $offset = 0): array
     {
-        $baseList = $this->getBaseList($sysModelIdList, $limit, $offset);
+        $baseList = $this->getBaseList($sysModelIdList, (int)($limit * 1.3), $offset);
         $baseList = ArrayHelper::index($baseList, 'rowKey');
 
         /**
@@ -95,7 +99,6 @@ class D3ActivityList extends Component
         /**
          * for each model get ActivityRecords
          */
-        $returnList = [];
         foreach ($sysModelsRecordIdList as $sysModelId => $modelIdList) {
             /** @var ModelActivityInterface $modelDetailClass */
             $modelDetailClass = $this->getModelDetailClassName($sysModelId);
@@ -103,10 +106,23 @@ class D3ActivityList extends Component
             foreach ($modelDetailClass::findByIdList($modelIdList) as $activityRecord) {
                 $key = $sysModelId . ' ' . $activityRecord->recordId;
                 $activityRecord->dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $baseList[$key]['maxTime']);
-                $returnList[$key] = $activityRecord;
+                $baseList[$key]['record'] = $activityRecord;
             }
         }
+        $returnList = [];
+        /**
+         * for deleted model record not found record and its ignore
+         */
+        foreach($baseList as $baseListKey => $baseListRow){
 
+            if(!isset($baseListRow['record'])){
+                continue;
+            }
+            $returnList[$baseListKey] = $baseListRow['record'];
+            if(count($returnList) >= $limit){
+                break;
+            }
+        }
         return $returnList;
 
     }
@@ -115,16 +131,12 @@ class D3ActivityList extends Component
      * get activities fro models
      * @param array $sysModelIdList
      * @param int $limit
+     * @param int $offset
      * @return array
      * @throws \yii\db\Exception
      */
     public function getBaseList(array $sysModelIdList, int $limit, int $offset): array
     {
-        if ($sysModelIdList) {
-            $sysModels = 'AND sys_model_id IN (' . implode(',', $sysModelIdList) . ')';
-        } else {
-            $sysModels = '';
-        }
 
         return Yii::$app->db->createCommand(
             '
@@ -136,7 +148,7 @@ class D3ActivityList extends Component
                     FROM
                       `d3a_activity` 
                     WHERE sys_company_id = :sysCompanyId 
-                      ' . $sysModels . ' 
+                      AND sys_model_id IN (' . implode(',', $sysModelIdList) . ')
                     GROUP BY `sys_model_id`,
                       `model_id` 
                     ORDER BY `time` DESC 
@@ -147,7 +159,7 @@ class D3ActivityList extends Component
                 ':offset' => $offset
             ]
         )
-            ->queryAll();
+        ->queryAll();
     }
 
     /**
