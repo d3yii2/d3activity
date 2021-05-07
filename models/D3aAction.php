@@ -29,5 +29,20 @@ class D3aAction extends BaseD3aAction
         parent::afterDelete();
         D3aActionDictionary::clearCache();
     }
+    
+    public function setLabel(string $language, string $label)
+    {
+        if($Alabel = D3DActionLabel::findOne(['action_id' => $this->id])) {
+            $Alabel->label = $label;
+            $Alabel->language = $language;
+            $Alabel->save();
+        } else {
+            $newAlabel = new D3DActionLabel();
+            $newAlabel->action_id = $this->id;
+            $newAlabel->language = $language;
+            $newAlabel->label = $label;
+            $newAlabel->save();
+        }
+    }
 
 }
