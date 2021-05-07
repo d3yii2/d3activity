@@ -2,6 +2,7 @@
 
 namespace d3yii2\d3activity\models;
 
+use d3yii2\d3activity\dictionaries\D3aActionLabelDictionary;
 use \d3yii2\d3activity\models\base\D3DActionLabel as BaseD3DActionLabel;
 
 /**
