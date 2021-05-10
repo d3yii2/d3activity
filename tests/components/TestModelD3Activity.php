@@ -13,7 +13,7 @@ class TestModelD3Activity implements ModelActivityInterface
      * @param int[] $idList
      * @return ActivityRecord[]
      */
-    public static function findByIdList(array $idList): array
+    public static function findByIdList(array $idList, array $filter = []): array
     {
         $record = new ActivityRecord();
         $record->recordId = D3ActivityListTest::MODEL_Id;
@@ -24,5 +24,10 @@ class TestModelD3Activity implements ModelActivityInterface
         ];
 
         return [$record];
+    }
+
+    public static function findModel(int $id)
+    {
+        // TODO: Implement findModel() method.
     }
 }

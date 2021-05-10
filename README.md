@@ -68,6 +68,7 @@ Get activity record list
 ```php
         $sysModelIdA = SysModelsDictionary::getIdByClassName(TestModel::class);
         $sysModelIdB = SysModelsDictionary::getIdByClassName(self::TEST_CLASS_NAME);
+        Yii::$app->activityList->filter = [ActivityConfig::PERSON_ID => 44];
         $list = Yii::$app
             ->activityList
             ->getDescList([$sysModelIdA,$sysModelIdB]);
