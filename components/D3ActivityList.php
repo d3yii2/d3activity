@@ -126,6 +126,7 @@ class D3ActivityList extends Component
                 break;
             }
         }
+        $this->filter = [];
         return $returnList;
 
     }
