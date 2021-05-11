@@ -22,4 +22,7 @@ class ActivityRecord
     /** @var \DateTime */
     public $dateTime;
 
+    /** @var array */
+    public $additionalFields = [];
+
 }

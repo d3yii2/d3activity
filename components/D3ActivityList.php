@@ -49,6 +49,9 @@ class D3ActivityList extends Component
     /** @var array */
     public $filter = [];
 
+    /** @var array */
+    public $additionalFields = [];
+
     public function __construct($config = [])
     {
         parent::__construct($config);
@@ -106,7 +109,7 @@ class D3ActivityList extends Component
             /** @var ModelActivityInterface $modelDetailClass */
             $modelDetailClass = $this->getModelDetailClassName($sysModelId);
             /** @var ActivityRecord[] $modelDetail */
-            foreach ($modelDetailClass::findByIdList($modelIdList, $this->filter) as $activityRecord) {
+            foreach ($modelDetailClass::findByIdList($modelIdList, $this->filter, $this->additionalFields) as $activityRecord) {
                 $key = $sysModelId . ' ' . $activityRecord->recordId;
                 $activityRecord->dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $baseList[$key]['maxTime']);
                 $baseList[$key]['record'] = $activityRecord;
@@ -127,6 +130,7 @@ class D3ActivityList extends Component
             }
         }
         $this->filter = [];
+        $this->additionalFields = [];
         return $returnList;
 
     }

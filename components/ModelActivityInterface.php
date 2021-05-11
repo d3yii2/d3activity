@@ -10,7 +10,11 @@ interface ModelActivityInterface
      * @param int[] $idList model record id list
      * @return ActivityRecord[]
      */
-    public static function findByIdList(array $idList, array $filter = []): array;
+    public static function findByIdList(
+        array $idList,
+        array $filter = [],
+        array $additionalFields = []
+    ): array;
 
     /**
      * @param int $id
