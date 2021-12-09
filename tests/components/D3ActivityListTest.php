@@ -55,7 +55,7 @@ class D3ActivityListTest extends TestCase
             }
         ]);
 
-        $testModel = new TestModel();
+        $testModel = new PeriodWorkTimeTest();
         $testModel->id = self::MODEL_Id;
 
         $register->registerModel($testModel, self::TEST_ACTION, ['test' => 'test']);
@@ -86,7 +86,7 @@ class D3ActivityListTest extends TestCase
             },
             'modelsData' => [
                 [
-                    'modelClass' => TestModel::class,
+                    'modelClass' => PeriodWorkTimeTest::class,
                     'detailClass' => TestModelD3Activity::class
                 ],
                 [
@@ -95,7 +95,7 @@ class D3ActivityListTest extends TestCase
                 ]
             ],
         ]);
-        $sysModelIdA = SysModelsDictionary::getIdByClassName(TestModel::class);
+        $sysModelIdA = SysModelsDictionary::getIdByClassName(PeriodWorkTimeTest::class);
         $sysModelIdB = SysModelsDictionary::getIdByClassName(self::TEST_CLASS_NAME);
         $list = $activitylist->getDescList([$sysModelIdA]);
         $this->assertCount(1, $list);
