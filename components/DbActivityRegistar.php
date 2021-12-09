@@ -29,14 +29,16 @@ class DbActivityRegistar extends Component implements ActivityRegistar
     public function __construct($config = [])
     {
         parent::__construct($config);
-        if ($this->sysCompanyId && is_callable($this->sysCompanyId, true)) {
-            if(!$this->sysCompanyId = call_user_func($this->sysCompanyId)){
-                $this->sysCompanyId = null;
-            }
+        if ($this->sysCompanyId && is_callable($this->sysCompanyId, true)
+            && !$this->sysCompanyId = call_user_func($this->sysCompanyId)
+        ) {
+            $this->sysCompanyId = null;
         }
 
-        if ($this->userId && is_callable($this->userId, true)) {
-            $this->userId = call_user_func($this->userId);
+        if ($this->userId && is_callable($this->userId, true)
+            && !$this->userId = call_user_func($this->userId)
+        ) {
+            $this->userId = 0;
         }
     }
 
@@ -57,13 +59,10 @@ class DbActivityRegistar extends Component implements ActivityRegistar
                 throw new D3ActiveRecordException($activityModel);
             }
         } catch (Exception $e) {
-            Yii::error($e->getMessage());
+            Yii::error($e->getMessage() . PHP_EOL . $e->getTraceAsString());
         }
     }
 
-    /**
-     * @inheritdoc
-     */
     private function newD3aActivity(string $action, array $data): D3aActivity
     {
 
