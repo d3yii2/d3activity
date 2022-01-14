@@ -9,6 +9,7 @@ use d3yii2\d3pop3\components\D3Mail;
 use yii\console\ExitCode;
 use yii\validators\EmailValidator;
 use Yii;
+use yii2d3\d3persons\accessRights\CompanyOwnerUserRole;
 
 
 /**
@@ -38,6 +39,21 @@ class DailyActivityNotification extends D3CommandController {
 
     /** @var string */
     public $fromEmail = 'info@system.com';
+
+
+    public function init()
+    {
+        if(empty($this->sysCompanyIds)) {
+            if($companyActivities = D3aActivity::find()->select(['sys_company_id'])->andWhere(['sys_model_id' => $this->sysModelIds])->groupBy(['sys_company_id'])->asArray()->all()) {
+                foreach ($companyActivities as $key => $entry) {
+                    $owner = $this->getCompanyOwner($entry['sys_company_id']);
+                    if(isset($owner[0])) {
+                        $this->sysCompanyIds[$entry['sys_company_id']] = $owner[0]['email'];
+                    }
+                }
+            }
+        }
+    }
 
     public function actionIndex() : int
     {
@@ -109,5 +125,32 @@ class DailyActivityNotification extends D3CommandController {
             Yii::error($e->getTraceAsString());
             $transaction->rollback();
         }
+    }
+
+    private function getCompanyOwner(int $companyId)
+    {
+        $sql = '
+            SELECT
+                u.email,
+                u.username,
+                u.id
+            FROM
+                user u
+                LEFT OUTER JOIN auth_assignment aa
+                  ON aa.user_id = u.id
+            WHERE
+                aa.sys_company_id = :id
+                AND aa.item_name = :item_name
+             LIMIT 1 
+            ';
+
+        $param = [
+            ':id' => $companyId,
+            ':item_name' => CompanyOwnerUserRole::NAME,
+        ];
+
+        $connection = Yii::$app->getDb();
+        $command = $connection->createCommand($sql, $param);
+        return $command->queryAll();
     }
 }
