@@ -3,13 +3,13 @@
 namespace d3yii2\d3activity\components;
 
 use d3system\commands\D3CommandController;
+use d3system\dictionaries\SysModelsDictionary;
 use d3yii2\d3activity\models\D3aActivity;
 use d3yii2\d3activity\models\D3aLastNotification;
 use d3yii2\d3pop3\components\D3Mail;
 use yii\console\ExitCode;
 use yii\validators\EmailValidator;
 use Yii;
-use yii2d3\d3persons\accessRights\CompanyOwnerUserRole;
 
 
 /**
@@ -21,8 +21,8 @@ use yii2d3\d3persons\accessRights\CompanyOwnerUserRole;
  * ```php
  *  'dailyActivityNotification' =>[
  *      'class' => 'd3yii2\components\DailyActivityNotification',
- *      'sysCompanyIds' => [1 => 'email1@email1.com', 2 => 'email2@email2.com', 3 => ....],
- *      'sysModelIds' => [1,2,3,4,5]
+ *      'sysCompanyIds' => [1 => 'd3yii2\d3pop3\models\D3pop3Email', 2 => 'dektrium\user\models\User', 3 => ....],
+ *      'sysModelClassNames' => ['yii2d3\d3persons\accessRights\CompanyOwnerUserRole']
  *  ]
  */
 
@@ -32,7 +32,8 @@ class DailyActivityNotification extends D3CommandController {
     public $sysCompanyIds = [];
 
     /** @var array */
-    public $sysModelIds = [];
+    public $sysModelClassNames = [];
+    private $sysModelIds = [];
 
     /** @var string */
     public $subject = 'Daily System Notification';
@@ -40,13 +41,33 @@ class DailyActivityNotification extends D3CommandController {
     /** @var string */
     public $fromEmail = 'info@system.com';
 
+    /** @var string */
+    public $viewPath = '@d3yii2/d3activity/views/email/dailyActivityNotification';
+
+    /** @var array  */
+    public $userRoles = [];
+    private $userRoleNames = [];
 
     public function init()
     {
-        if(empty($this->sysCompanyIds)) {
-            if($companyActivities = D3aActivity::find()->select(['sys_company_id'])->andWhere(['sys_model_id' => $this->sysModelIds])->groupBy(['sys_company_id'])->asArray()->all()) {
+        if(empty($this->sysCompanyIds) && !empty($this->userRoles)) {
+            foreach ($this->sysModelClassNames as $key => $modelClassName) {
+                $this->sysModelIds[] = SysModelsDictionary::getIdByClassName($modelClassName);
+            }
+            foreach ($this->userRoles as $key => $rolePath) {
+                if(class_exists($rolePath) && $rolePath::NAME !== null) {
+                    $this->userRoleNames[] = $rolePath::NAME;
+                }
+            }
+
+            if($companyActivities = D3aActivity::find()
+                ->distinct()
+                ->select(['sys_company_id'])
+                ->andWhere(['sys_model_id' => $this->sysModelIds])
+                ->asArray()
+                ->all()) {
                 foreach ($companyActivities as $key => $entry) {
-                    $owner = $this->getCompanyOwner($entry['sys_company_id']);
+                    $owner = $this->getUserEmailBYRole($entry['sys_company_id']);
                     if(isset($owner[0])) {
                         $this->sysCompanyIds[$entry['sys_company_id']] = $owner[0]['email'];
                     }
@@ -64,7 +85,11 @@ class DailyActivityNotification extends D3CommandController {
                     continue;
                 }
                if($lastNotifications =  D3aLastNotification::find()->where(['sys_company_id' => $companyId])->orderBy(['time' => SORT_DESC])->one()) {
-                   if($newActivities =  D3aActivity::find()->where(['sys_company_id' => $companyId])->andWhere(['sys_model_id' => $this->sysModelIds])->andWhere(['>', 'time', $lastNotifications->time])->all()) {
+                   if($newActivities =  D3aActivity::find()
+                       ->where(['sys_company_id' => $companyId])
+                       ->andWhere(['sys_model_id' => $this->sysModelIds])
+                       ->andWhere(['>', 'time', $lastNotifications->time])
+                       ->all()) {
                         if($this->composeEmail($newActivities, $email, $companyId)) {
                             $this->logSentActivities($companyId);
                         }
@@ -91,7 +116,7 @@ class DailyActivityNotification extends D3CommandController {
         $transaction = $connection->beginTransaction();
         try {
             $email = new D3Mail();
-            $html = Yii::$app->controller->renderPartial('@d3yii2/d3activity/views/email/dailyActivityNotification',['activities' => $newActivities]);
+            $html = Yii::$app->controller->renderPartial($this->viewPath,['activities' => $newActivities]);
             $email->setBodyHtml($html)
                 ->setEmailId(['SYS', $companyId, 'INV', $newActivities[0]->id, date('YmdHis')])
                 ->setSubject($this->subject)
@@ -127,7 +152,7 @@ class DailyActivityNotification extends D3CommandController {
         }
     }
 
-    private function getCompanyOwner(int $companyId)
+    private function getUserEmailBYRole(int $companyId)
     {
         $sql = '
             SELECT
@@ -140,13 +165,13 @@ class DailyActivityNotification extends D3CommandController {
                   ON aa.user_id = u.id
             WHERE
                 aa.sys_company_id = :id
-                AND aa.item_name = :item_name
-             LIMIT 1 
+                AND aa.item_name IN (:item_name)
+                LIMIT 1
             ';
 
         $param = [
             ':id' => $companyId,
-            ':item_name' => CompanyOwnerUserRole::NAME,
+            ':item_name' => implode(",", $this->userRoleNames),
         ];
 
         $connection = Yii::$app->getDb();
