@@ -12,9 +12,9 @@
 <height>97</height>
 <sql_create_table>CREATE TABLE `d3a_action` (
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) CHARACTER SET utf8 DEFAULT NULL,
+  `name` varchar(256) CHARACTER SET utf8 DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1</sql_create_table>
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=latin1</sql_create_table>
 </table>
 <table name="d3a_activity" view="colnames">
 <left>414</left>
@@ -23,13 +23,13 @@
 <height>199</height>
 <sql_create_table>CREATE TABLE `d3a_activity` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `sys_company_id` smallint(5) unsigned NOT NULL,
+  `sys_company_id` smallint(5) unsigned DEFAULT NULL,
   `user_id` smallint(5) unsigned DEFAULT NULL,
   `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `sys_model_id` tinyint(3) unsigned NOT NULL,
   `model_id` int(10) unsigned NOT NULL,
   `action_id` smallint(5) unsigned NOT NULL,
-  `data` text,
+  `data` text CHARACTER SET utf8,
   PRIMARY KEY (`id`),
   KEY `action_id` (`action_id`),
   KEY `sys_company_id` (`sys_company_id`),
@@ -37,7 +37,7 @@
   CONSTRAINT `d3a_activity_ibfk_1` FOREIGN KEY (`action_id`) REFERENCES `d3a_action` (`id`),
   CONSTRAINT `d3a_activity_ibfk_2` FOREIGN KEY (`sys_company_id`) REFERENCES `d3c_company` (`id`),
   CONSTRAINT `d3a_activity_ibfk_3` FOREIGN KEY (`sys_model_id`) REFERENCES `sys_models` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1</sql_create_table>
+) ENGINE=InnoDB AUTO_INCREMENT=30066 DEFAULT CHARSET=latin1</sql_create_table>
 </table>
 <table name="d3c_company" view="colnames">
 <left>616</left>
@@ -59,6 +59,7 @@
   `comunication_language_id` tinyint(3) unsigned DEFAULT NULL COMMENT 'Comunication language',
   `deleted` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT 'Deleted',
   `deleted_at` int(11) unsigned DEFAULT NULL COMMENT 'Deleted At',
+  `add_data` longtext COMMENT 'Add Data',
   PRIMARY KEY (`id`),
   KEY `reg_partnet_company_id` (`reg_partnet_company_id`),
   KEY `type_id` (`type_id`),
@@ -68,7 +69,7 @@
   CONSTRAINT `d3c_company_ibfk_2` FOREIGN KEY (`country_id`) REFERENCES `cl_countries` (`id`),
   CONSTRAINT `d3c_company_ibfk_comLang` FOREIGN KEY (`comunication_language_id`) REFERENCES `cl_language` (`id`),
   CONSTRAINT `d3c_company_ibfk_type` FOREIGN KEY (`type_id`) REFERENCES `d3c_type` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=404 DEFAULT CHARSET=utf8</sql_create_table>
+) ENGINE=InnoDB AUTO_INCREMENT=5249 DEFAULT CHARSET=utf8</sql_create_table>
 </table>
 <table name="sys_models" view="colnames">
 <left>198</left>
@@ -81,7 +82,19 @@
   `class_name` varchar(256) DEFAULT NULL COMMENT 'Class',
   PRIMARY KEY (`id`),
   UNIQUE KEY `table_name` (`table_name`,`class_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=ascii</sql_create_table>
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=ascii</sql_create_table>
+</table>
+<table name="d3a_last_notification" view="colnames">
+<left>414</left>
+<top>296</top>
+<width>159</width>
+<height>114</height>
+<sql_create_table>CREATE TABLE `d3a_last_notification` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `sys_company_id` smallint(5) unsigned NOT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1</sql_create_table>
 </table>
 </tables>
 </canvas>

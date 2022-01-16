@@ -27,7 +27,6 @@ use yii\validators\EmailValidator;
  *                'd3yii2\d3pop3\models\D3pop3Email',
  *                'dektrium\user\models\User',
  *            ],
- *            'recipientUserRolesNames' => ['CompanyOwner'],
  *            'fromMail' => 'net@company.com',
  *            //'sysCompaniesEmails' => [62 => 'uldis@nnn.lt'],
  *            'companyName' => static function(int $companyId) {
@@ -45,8 +44,10 @@ use yii\validators\EmailValidator;
 class DailyActivityNotification extends D3CommandComponent
 {
 
+    public  $sysCompaniesIds = [];
+
     /**
-     * Use, if nod defined config parameter $recipientUserRolesNames
+     * Use, if nod defined config parameter $getCompanyEmail
      * define companies and recipients emails.
      * @var array [
      *  $company1Id => 'email@company1.com',
@@ -56,7 +57,13 @@ class DailyActivityNotification extends D3CommandComponent
     public $sysCompaniesEmails = [];
 
     /**
-     * callable function for getting company name
+     * callable for getting emails for recipients
+     * @var string|callable
+     */
+    public $getCompanyEmail;
+
+    /**
+     * callable for getting company name
      * @var string|callable
      */
     public $companyName;
@@ -89,30 +96,30 @@ class DailyActivityNotification extends D3CommandComponent
     /** @var string */
     public $viewPath = '@d3yii2/d3activity/views/email/dailyActivityNotification';
 
-    /**
-     * If no defined $sysCompaniesEmails, find users by roles
-     * @var array
-     */
-    public $recipientUserRolesNames = [];
-
     public function init()
     {
         foreach ($this->activityModelClassNames as $modelClassName) {
             $this->sysModelIds[] = SysModelsDictionary::getIdByClassName($modelClassName);
         }
-        if (empty($this->sysCompaniesEmails)
-            && $companyActivities = D3aActivity::find()
+        if (!$this->sysCompaniesEmails) {
+            $d3aActivityQuery = D3aActivity::find()
                 ->distinct()
                 ->select(['sys_company_id'])
                 ->andWhere(['sys_model_id' => $this->sysModelIds])
-                ->andWhere('not sys_company_id is null')
+                ->andWhere('not sys_company_id is null');
+            if ($this->sysCompaniesIds) {
+                $d3aActivityQuery->andWhere(['sys_company_id' => $this->sysCompaniesIds]);
+            }
+            if ($companyActivities = $d3aActivityQuery
                 ->asArray()
                 ->all()
-        ) {
-            foreach ($companyActivities as $entry) {
-                $owner = $this->getUserEmailBYRole($entry['sys_company_id']);
-                if (isset($owner[0])) {
-                    $this->sysCompaniesEmails[$entry['sys_company_id']] = $owner[0]['email'];
+            ) {
+                foreach ($companyActivities as $entry) {
+                    $callable = $this->getCompanyEmail;
+                    if (!is_callable($callable)) {
+                        throw new \yii\console\Exception('setting getCompanyEmail must be callable');
+                }
+                    $this->sysCompaniesEmails[$entry['sys_company_id']] = $callable($entry['sys_company_id']);
                 }
             }
         }
@@ -121,8 +128,11 @@ class DailyActivityNotification extends D3CommandComponent
     public function run(D3ComponentCommandController $controller): bool
     {
         parent::run($controller);
-        if (!empty($this->sysCompaniesEmails)) {
-            foreach ($this->sysCompaniesEmails as $companyId => $email) {
+        if (empty($this->sysCompaniesEmails)) {
+            return true;
+        }
+        foreach ($this->sysCompaniesEmails as $companyId => $emails) {
+            foreach ($emails as $email) {
                 $this->out('SysCompnay: ' . $companyId . ';  to: ' . $email);
                 $emailValidator = new EmailValidator();
                 if (empty($companyId)) {
@@ -213,7 +223,9 @@ class DailyActivityNotification extends D3CommandComponent
     private function logSentActivities(int $sysCompanyId): void
     {
         $connection = $this->controller->getConnection();
-        $transaction = $connection->beginTransaction();
+        if (!$transaction = $connection->beginTransaction()) {
+            throw new \yii\db\Exception('Can not initiate transaction');
+        }
         $model = new D3aLastNotification();
         $model->sys_company_id = $sysCompanyId;
         try {
@@ -229,33 +241,4 @@ class DailyActivityNotification extends D3CommandComponent
             $transaction->rollback();
         }
     }
-
-    private function getUserEmailBYRole(int $companyId)
-    {
-        $sql = '
-            SELECT
-                u.email,
-                u.username,
-                u.id
-            FROM
-                user u
-                LEFT OUTER JOIN auth_assignment aa
-                  ON aa.user_id = u.id
-            WHERE
-                aa.sys_company_id = :id
-                AND aa.item_name IN (:item_name)
-                LIMIT 1
-            ';
-
-        $param = [
-            ':id' => $companyId,
-            ':item_name' => implode(",", $this->recipientUserRolesNames),
-        ];
-
-        return Yii::$app
-            ->getDb()
-            ->createCommand($sql, $param)
-            ->queryAll();
-    }
-
 }
