@@ -1,36 +1,25 @@
 <?php
 use d3yii2\d3activity\dictionaries\D3aActionLabelDictionary;
-use yii2d3\d3persons\models\D3pPerson;
-use yii2d3\d3persons\models\User;
 /**
  * @var \yii\data\ActiveDataProvider $activities
+ * @var string $companyName
  */
 
 
 ?>
-
+Company <?=$companyName?> last activities
 <div class="">
         <table class="report_table">
             <thead>
+            <tr>
             <th>Name</th>
-            <th>User </th>
             <th>Date Time</th>
+            </tr>
             </thead>
             <tbody>
             <?php foreach ($activities as $a) { ?>
                 <tr>
                     <td><?= D3aActionLabelDictionary::getLabel($a->action_id) ?></td>
-                    <td><?php
-                        if($user = User::findOne($a->user_id)) {
-                            if($person = D3pPerson::findOne(['user_id' => $a->user_id])) {
-                                echo $person->getFullName();
-                            } else {
-                                echo $user->username;
-                            }
-                        } else {
-                            echo '-';
-                        }
-                        ?></td>
                     <td><?= $a->time?></td>
                 </tr>
             <?php } ?>
