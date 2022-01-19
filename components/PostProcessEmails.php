@@ -1,13 +1,9 @@
 <?php
 
-
 namespace d3yii2\d3activity\components;
 
-
-use d3modules\d3invoices\models\D3cCompany;
 use d3yii2\d3pop3\components\PostProcessingInterface;
 use d3yii2\d3pop3\models\D3pop3Email;
-use yii\base\Exception;
 use Yii;
 
 class PostProcessEmails implements PostProcessingInterface
@@ -36,11 +32,11 @@ class PostProcessEmails implements PostProcessingInterface
 
     /**
      * @param D3pop3Email $getD3pop3Email
-     * @throws Exception
+     * @param  object|\d3modules\d3invoices\models\D3cCompany $company
      */
-
-    public function run($getD3pop3Email, D3cCompany $company)
+    public function run($getD3pop3Email, object $company)
     {
+
         $activityRegistar = Yii::$app->activityRegistar;
         $activityRegistar->sysCompanyId = $company->id;
         $activityRegistar->registerModel(
