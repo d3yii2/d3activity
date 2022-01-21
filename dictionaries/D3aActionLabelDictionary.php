@@ -5,7 +5,6 @@ namespace d3yii2\d3activity\dictionaries;
 use Yii;
 use d3yii2\d3activity\models\D3DActionLabel;
 use yii\helpers\ArrayHelper;
-use d3system\exceptions\D3ActiveRecordException;
 
 class D3aActionLabelDictionary{
 
@@ -18,16 +17,15 @@ class D3aActionLabelDictionary{
                 return ArrayHelper::map(
                     D3DActionLabel::find()
                  //       ->where(['language' => 'lv-LV'])   //  Yii::$app->language  ? en-US
-                    ->select([
-                        'action_id' => 'action_id',
-                        'label' => 'label'
-                    ])
-                                        ->orderBy([
+                        ->select([
+                            'action_id' => 'action_id',
+                            'label' => 'label'
+                        ])
+                        ->orderBy([
                         'label' => SORT_ASC,
-                    ])
-                    ->asArray()
-                    ->all()
-                ,
+                        ])
+                        ->asArray()
+                        ->all(),
                 'action_id',
                 'label'
                 );
@@ -41,7 +39,7 @@ class D3aActionLabelDictionary{
     * @param int $id
     * @return string|null
     */
-    public static function getLabel(int $id)
+    public static function getLabel(int $id): ?string
     {
         return self::getList()[$id]??null;
     }
