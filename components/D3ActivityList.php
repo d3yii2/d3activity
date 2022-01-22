@@ -107,12 +107,13 @@ class D3ActivityList extends Component
          */
         foreach ($sysModelsRecordIdList as $sysModelId => $modelIdList) {
             /** @var ModelActivityInterface $modelDetailClass */
-            $modelDetailClass = $this->getModelDetailClassName($sysModelId);
-            /** @var ActivityRecord[] $modelDetail */
-            foreach ($modelDetailClass::findByIdList($modelIdList, $this->filter, $this->additionalFields) as $activityRecord) {
-                $key = $sysModelId . ' ' . $activityRecord->recordId;
-                $activityRecord->dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $baseList[$key]['maxTime']);
-                $baseList[$key]['record'] = $activityRecord;
+            if ($modelDetailClass = $this->getModelDetailClassName($sysModelId)) {
+                /** @var ActivityRecord[] $modelDetail */
+                foreach ($modelDetailClass::findByIdList($modelIdList, $this->filter, $this->additionalFields) as $activityRecord) {
+                    $key = $sysModelId . ' ' . $activityRecord->recordId;
+                    $activityRecord->dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $baseList[$key]['maxTime']);
+                    $baseList[$key]['record'] = $activityRecord;
+                }
             }
         }
         $returnList = [];
@@ -173,17 +174,17 @@ class D3ActivityList extends Component
     /**
      * from component config get model deltails class
      * @param int $sysModelId
-     * @return string
+     * @return string|null
      * @throws Exception
      * @throws \d3system\exceptions\D3ActiveRecordException
      */
-    private function getModelDetailClassName(int $sysModelId): string
+    private function getModelDetailClassName(int $sysModelId): ?string
     {
         foreach ($this->modelsData as $modelData) {
             if (SysModelsDictionary::getIdByClassName($modelData['modelClass']) === $sysModelId) {
                 return $modelData['detailClass'];
             }
         }
-        throw new Exception('Can not find model detail class for sysModelId: ' . $sysModelId);
+        return null;
     }
 }
