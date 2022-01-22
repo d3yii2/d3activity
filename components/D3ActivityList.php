@@ -111,6 +111,8 @@ class D3ActivityList extends Component
             /** @var ActivityRecord[] $modelDetail */
             foreach ($modelDetailClass::findByIdList($modelIdList, $this->filter, $this->additionalFields) as $activityRecord) {
                 $key = $sysModelId . ' ' . $activityRecord->recordId;
+                $activityRecord->sysModelId = $sysModelId;
+                $activityRecord->userId = $baseList[$key]['user_id'];
                 $activityRecord->dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $baseList[$key]['maxTime']);
                 $baseList[$key]['record'] = $activityRecord;
             }
@@ -152,7 +154,8 @@ class D3ActivityList extends Component
                       sys_model_id,
                       model_id,
                       MAX(`time`) maxTime,
-                      CONCAT(sys_model_id,\' \',model_id) rowKey 
+                      CONCAT(sys_model_id,\' \',model_id) rowKey,
+                      user_id
                     FROM
                       `d3a_activity` 
                     WHERE sys_company_id = :sysCompanyId 
