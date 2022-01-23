@@ -25,4 +25,10 @@ class ActivityRecord
     /** @var array */
     public $additionalFields = [];
 
+    /** @var int */
+    public $userId;
+
+    /** @var int */
+    public $sysModelId;
+
 }
