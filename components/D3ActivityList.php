@@ -176,17 +176,17 @@ class D3ActivityList extends Component
     /**
      * from component config get model deltails class
      * @param int $sysModelId
-     * @return string
+     * @return string|null
      * @throws Exception
      * @throws \d3system\exceptions\D3ActiveRecordException
      */
-    private function getModelDetailClassName(int $sysModelId): string
+    private function getModelDetailClassName(int $sysModelId): ?string
     {
         foreach ($this->modelsData as $modelData) {
             if (SysModelsDictionary::getIdByClassName($modelData['modelClass']) === $sysModelId) {
                 return $modelData['detailClass'];
             }
         }
-        throw new Exception('Can not find model detail class for sysModelId: ' . $sysModelId);
+        return null;
     }
 }
