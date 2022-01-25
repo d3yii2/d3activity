@@ -41,7 +41,7 @@ class PostProcessEmails implements PostProcessingInterface
         $activityRegistar->sysCompanyId = $company->id;
         $activityRegistar->registerModel(
             $getD3pop3Email,
-            'd3yii2/d3pop2/D3PoP3/read', // ??
+            'd3yii2/d3pop3/D3PoP3/read', // ??
             [
                 'subject' => $getD3pop3Email->subject,
                 'from' => $getD3pop3Email->from

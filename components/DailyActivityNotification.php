@@ -96,6 +96,13 @@ class DailyActivityNotification extends D3CommandComponent
     /** @var string */
     public $viewPath = '@d3yii2/d3activity/views/email/dailyActivityNotification';
 
+    /**
+     * specify if you want to select specific X previous days for query
+     * if specified ignores last D3aLastNotification entry
+     * @var int
+     */
+    public $dayRange;
+
     public function init()
     {
         foreach ($this->activityModelClassNames as $modelClassName) {
@@ -155,7 +162,10 @@ class DailyActivityNotification extends D3CommandComponent
                 $d3aActivityQuery = D3aActivity::find()
                     ->where(['sys_company_id' => $companyId])
                     ->andWhere(['sys_model_id' => $this->sysModelIds]);
-                if ($lastNotifications = D3aLastNotification::find()
+                if (!empty($this->dayRange)) {
+                    $d3aActivityQuery
+                        ->andWhere(['>', 'time', date('Y-m-d 00:00:00', strtotime('-'.$this->dayRange.' days'))]);
+                } else if ($lastNotifications = D3aLastNotification::find()
                     ->where(['sys_company_id' => $companyId])
                     ->orderBy(['time' => SORT_DESC])
                     ->one()
