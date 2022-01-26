@@ -164,7 +164,7 @@ class DailyActivityNotification extends D3CommandComponent
                     ->andWhere(['sys_model_id' => $this->sysModelIds]);
                 if (!empty($this->dayRange)) {
                     $d3aActivityQuery
-                        ->andWhere(['>', 'time', date('Y-m-d 00:00:00', strtotime('-'.$this->dayRange.' days'))]);
+                        ->andWhere(['>', 'time', date('Y-m-d H:i:s', strtotime('-'.$this->dayRange.' days'))]);
                 } else if ($lastNotifications = D3aLastNotification::find()
                     ->where(['sys_company_id' => $companyId])
                     ->orderBy(['time' => SORT_DESC])
@@ -236,19 +236,25 @@ class DailyActivityNotification extends D3CommandComponent
         if (!$transaction = $connection->beginTransaction()) {
             throw new \yii\db\Exception('Can not initiate transaction');
         }
-        $model = new D3aLastNotification();
-        $model->sys_company_id = $sysCompanyId;
-        try {
+        $model = D3aLastNotification::findOne(['sys_company_id' => $sysCompanyId]);
 
-            $model->save();
-            $transaction->commit();
-        } catch (Exception $e) {
-
-            $this->out($e->getMessage());
-            $this->out($e->getTraceAsString());
-            Yii::error($e->getMessage());
-            Yii::error($e->getTraceAsString());
-            $transaction->rollback();
+        if(empty($model)) {
+            $model = new D3aLastNotification();
+            $model->sys_company_id = $sysCompanyId;
         }
+
+        $model->time = date('Y-m-d H:i:s');
+            try {
+                $model->save();
+                $transaction->commit();
+            } catch (Exception $e) {
+
+                $this->out($e->getMessage());
+                $this->out($e->getTraceAsString());
+                Yii::error($e->getMessage());
+                Yii::error($e->getTraceAsString());
+                $transaction->rollback();
+            }
+
     }
 }
