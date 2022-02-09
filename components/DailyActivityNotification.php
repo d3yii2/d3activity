@@ -35,7 +35,37 @@ use yii\validators\EmailValidator;
  *                }
  *                return $company->name;
  *            },
- *            'subject' => 'Uzņēmuma {sysCompanyId} IRēķini pēdējās aktivitātes'
+ *            'subject' => 'Uzņēmuma {sysCompanyId} IRēķini pēdējās aktivitātes',
+ *            'getCompanyEmail' => static function(int $companyId) {
+ *                $sql = '
+ *                SELECT DISTINCT
+ *                  u.email,
+ *                  u.id
+ *                FROM
+ *                  user u
+ *                LEFT OUTER JOIN auth_assignment aa
+ *                ON aa.user_id = u.id
+ *                WHERE
+ *                  aa.sys_company_id = :id
+ *                ';
+ *
+ *                $param = [
+ *                   ':id' => $companyId,
+ *                ];
+ *                $emailList = [];
+ *                foreach(Yii::$app
+ *                    ->getDb()
+ *                    ->createCommand($sql, $param)
+ *                    ->queryAll() as $user) {
+ *
+ *                  if ($person = \d3yii2\d3pop3\models\D3pPerson::findOne(['user_id' => $user['id']])) {
+ *                    if ($person->readSettings('d3activityDailyReport')) {
+ *                      $emailList[] = $user['email'];
+ *                    }
+ *                  }
+ *                }
+ *                return $emailList;
+ *                },
  *        ],
  * ```
  * component calling by command
@@ -125,7 +155,7 @@ class DailyActivityNotification extends D3CommandComponent
                     $callable = $this->getCompanyEmail;
                     if (!is_callable($callable)) {
                         throw new \yii\console\Exception('setting getCompanyEmail must be callable');
-                }
+                    }
                     $this->sysCompaniesEmails[$entry['sys_company_id']] = $callable($entry['sys_company_id']);
                 }
             }
@@ -139,6 +169,10 @@ class DailyActivityNotification extends D3CommandComponent
             return true;
         }
         foreach ($this->sysCompaniesEmails as $companyId => $emails) {
+            if (!$emails) {
+                continue;
+            }
+            $this->out(implode('; ', $emails));
             foreach ($emails as $email) {
                 $this->out('SysCompnay: ' . $companyId . ';  to: ' . $email);
                 $emailValidator = new EmailValidator();
