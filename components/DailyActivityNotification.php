@@ -19,6 +19,8 @@ use yii\validators\EmailValidator;
  *
  * 'sysCompaniesEmails' = ['sysCompanyId' => 'email'];
  *
+ * Starting
+ *  sudo -u www-data php yii d3system/d3-component-command activityEmail
  * Component definition:
  * ```php
  *        'activityEmail' => [
@@ -172,9 +174,37 @@ class DailyActivityNotification extends D3CommandComponent
             if (!$emails) {
                 continue;
             }
-            $this->out(implode('; ', $emails));
+            if (is_callable($this->companyName)) {
+                $callable = $this->companyName;
+                $companyName = $callable($companyId);
+            } else {
+                $companyName = $this->companyName;
+            }
+            $this->out('SysCompnay: ' . $companyName . '/' . $companyId);
+            $this->out(implode(';',$emails));
+            $d3aActivityQuery = D3aActivity::find()
+                ->where(['sys_company_id' => $companyId])
+                ->andWhere(['sys_model_id' => $this->sysModelIds]);
+            if (!empty($this->dayRange)) {
+                $d3aActivityQuery
+                    ->andWhere(['>', 'time', date('Y-m-d H:i:s', strtotime('-'.$this->dayRange.' days'))]);
+            } else if ($lastNotifications = D3aLastNotification::find()
+                ->where(['sys_company_id' => $companyId])
+                ->orderBy(['time' => SORT_DESC])
+                ->one()
+            ) {
+                $d3aActivityQuery
+                    ->andWhere(['>', 'time', $lastNotifications->time]);
+            }
+            //$this->out($d3aActivityQuery->getRawSql());
+            if (!$newActivities = $d3aActivityQuery->all()) {
+                $this->out(' No activities - continue');
+                continue;
+            }
+
+
             foreach ($emails as $email) {
-                $this->out('SysCompnay: ' . $companyId . ';  to: ' . $email);
+                $this->out(' to: ' . $email);
                 $emailValidator = new EmailValidator();
                 if (empty($companyId)) {
                     $this->out(' Empty companyId - continue');
@@ -193,33 +223,8 @@ class DailyActivityNotification extends D3CommandComponent
                     continue;
                 }
 
-                $d3aActivityQuery = D3aActivity::find()
-                    ->where(['sys_company_id' => $companyId])
-                    ->andWhere(['sys_model_id' => $this->sysModelIds]);
-                if (!empty($this->dayRange)) {
-                    $d3aActivityQuery
-                        ->andWhere(['>', 'time', date('Y-m-d H:i:s', strtotime('-'.$this->dayRange.' days'))]);
-                } else if ($lastNotifications = D3aLastNotification::find()
-                    ->where(['sys_company_id' => $companyId])
-                    ->orderBy(['time' => SORT_DESC])
-                    ->one()
-                ) {
-                    $d3aActivityQuery
-                        ->andWhere(['>', 'time', $lastNotifications->time]);
-                }
-
-                if (!$newActivities = $d3aActivityQuery->all()) {
-                    $this->out(' No activities - continue');
-                    continue;
-                }
                 $this->out(' Found ' . count($newActivities));
 
-                if (is_callable($this->companyName)) {
-                    $callable = $this->companyName;
-                    $companyName = $callable($companyId);
-                } else {
-                    $companyName = $this->companyName;
-                }
                 if ($this->composeEmail($newActivities, $email, $companyName)) {
                     $this->out(' Sent');
                     $this->logSentActivities($companyId);
