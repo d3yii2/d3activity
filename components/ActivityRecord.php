@@ -11,6 +11,9 @@ namespace d3yii2\d3activity\components;
 class ActivityRecord
 {
     /** @var string */
+    public $name;
+
+    /** @var string */
     public $label;
 
     /** @var array */
