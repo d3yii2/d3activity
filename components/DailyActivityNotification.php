@@ -7,6 +7,7 @@ use d3system\controllers\D3ComponentCommandController;
 use d3system\dictionaries\SysModelsDictionary;
 use d3yii2\d3activity\models\D3aActivity;
 use d3yii2\d3activity\models\D3aLastNotification;
+use DateTime;
 use Exception;
 use Yii;
 use yii\validators\EmailValidator;
@@ -202,6 +203,20 @@ class DailyActivityNotification extends D3CommandComponent
                 continue;
             }
 
+            $list = [];
+            foreach($newActivities as $newActivity) {
+                /** @var ModelActivityInterface $modelDetailClass */
+                if (!$modelDetailClass = Yii::$app->activityList->getModelDetailClassName($newActivity->sys_model_id)) {
+                    continue;
+                }
+                /** @var ActivityRecord[] $modelDetail */
+                foreach ($modelDetailClass::findByIdList([$newActivity->model_id]) as $activityRecord) {
+                    $activityRecord->sysModelId = $newActivity->sys_model_id;
+                    $activityRecord->userId = $newActivity->user_id;
+                    $activityRecord->dateTime = DateTime::createFromFormat('Y-m-d H:i:s', $newActivity->time);
+                    $list[] = $activityRecord;
+                }
+            }
 
             foreach ($emails as $email) {
                 $this->out(' to: ' . $email);
@@ -225,7 +240,7 @@ class DailyActivityNotification extends D3CommandComponent
 
                 $this->out(' Found ' . count($newActivities));
 
-                if ($this->composeEmail($newActivities, $email, $companyName)) {
+                if ($this->composeEmail($list, $email, $companyName)) {
                     $this->out(' Sent');
                     $this->logSentActivities($companyId);
                 }

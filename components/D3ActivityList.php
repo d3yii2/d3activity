@@ -107,7 +107,9 @@ class D3ActivityList extends Component
          */
         foreach ($sysModelsRecordIdList as $sysModelId => $modelIdList) {
             /** @var ModelActivityInterface $modelDetailClass */
-            $modelDetailClass = $this->getModelDetailClassName($sysModelId);
+            if (!$modelDetailClass = $this->getModelDetailClassName($sysModelId)) {
+                continue;
+            }
             /** @var ActivityRecord[] $modelDetail */
             foreach ($modelDetailClass::findByIdList($modelIdList, $this->filter, $this->additionalFields) as $activityRecord) {
                 $key = $sysModelId . ' ' . $activityRecord->recordId;
@@ -180,7 +182,7 @@ class D3ActivityList extends Component
      * @throws Exception
      * @throws \d3system\exceptions\D3ActiveRecordException
      */
-    private function getModelDetailClassName(int $sysModelId): ?string
+    public function getModelDetailClassName(int $sysModelId): ?string
     {
         foreach ($this->modelsData as $modelData) {
             if (SysModelsDictionary::getIdByClassName($modelData['modelClass']) === $sysModelId) {
