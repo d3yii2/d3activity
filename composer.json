@@ -13,9 +13,9 @@
   ],
   "require": {
     "yiisoft/yii2": "*",
-    "d3yii2/d3system": "*",
+    "d3yii2/d3system": "dev-argon",
     "foroco/php-browser-detection": "dev-master",
-    "d3yii2/d3pop3": "*"
+    "d3yii2/d3pop3": "dev-argon"
   },
   "autoload": {
     "psr-4": {
