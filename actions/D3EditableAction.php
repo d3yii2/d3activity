@@ -3,7 +3,7 @@
 
 namespace d3yii2\d3activity\actions;
 
-use \d3system\actions\D3EditableAction as BaseD3EditableAction;
+use d3system\actions\D3EditableAction as BaseD3EditableAction;
 use yii\helpers\ArrayHelper;
 
 class D3EditableAction extends BaseD3EditableAction
