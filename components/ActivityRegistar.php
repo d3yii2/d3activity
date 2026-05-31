@@ -13,6 +13,8 @@ use yii\db\ActiveRecord;
  */
 interface ActivityRegistar
 {
+
+
     /**
      * registre model
      * @param ActiveRecord $model
